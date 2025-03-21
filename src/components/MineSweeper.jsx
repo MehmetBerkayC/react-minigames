@@ -14,12 +14,12 @@ export default function MineSweeper() {
 		]
 	
 	Piece
-		[PieceStatus, PieceInfo, DangerInfo]
+		[PieceStatus, PieceInfo, NeighbourInfo]
 		
 	PieceState
 		Empty - Mine
 
-	DangerInfo
+	NeighbourInfo
 		Amount of mines around this piece
 ------------------------------------------------------------------------
 	* Game Board 					-> 2D Matrix
@@ -28,7 +28,7 @@ export default function MineSweeper() {
 	* Piece Info 					-> Enum, FrozenObj
 		-> Mine
 		-> Empty
-	* Danger Info
+	* Neighbour Info
 		-> Nearby mines amount
 	* Piece Status 					-> Enum, FrozenObj
 		-> Open
@@ -74,24 +74,21 @@ export default function MineSweeper() {
 
 	const [grid, setGrid] = useState([]); // Global
 	const [isGameReady, setIsGameReady] = useState(false);
-	const [gridRows, setGridRows] = useState(0);
 
 	function initializeGrid(n, m) {
 		let placeHolderGrid = [];
 
-		// ORDER in piece -> PieceState, PieceInfo, DangerInfo
-		const placeHolderDangerInfo = 0;
-
+		// ORDER in piece -> [PieceState, PieceInfo, NeighbourInfo]
 		for (let x = 0; x < n; x++) {
 			// row
 			placeHolderGrid.push([]);
 			for (let y = 0; y < m; y++) {
 				// col
 				placeHolderGrid[x].push([
-					PieceStates.Open, // Change to closed
+					PieceStates.Closed,
 					PieceInfo.Empty,
-					placeHolderDangerInfo,
-				]); // Change to [PieceState, PieceInfo, DangerInfo]
+					0,
+				]); // Change to
 			}
 		}
 		// console.log("Initial grid:", placeHolderGrid);
@@ -125,12 +122,12 @@ export default function MineSweeper() {
 		for (let x = 0; x < rows; x++) {
 			for (let y = 0; y < cols; y++) {
 				let piece = placeHolderGrid[x][y];
+				// Reset Piece
+				piece = ResetPiece(piece);
+
+				// Insert Mine
 				piece[1] = flatMineGrid[x * cols + y];
-				// console.log(
-				// 	"item, index:",
-				// 	flatMineGrid[x * cols + y],
-				// 	x * cols + y
-				// );
+
 				placeHolderGrid[x][y] = piece;
 			}
 		}
@@ -152,17 +149,127 @@ export default function MineSweeper() {
 			}
 		}
 
+		// Identify Danger Numbers
+		for (let x = 0; x < rows; x++) {
+			for (let y = 0; y < cols; y++) {
+				// console.log(`At location ${x}-${y}`, placeHolderGrid[x][y]);
+				const currentPiece = placeHolderGrid[x][y];
+
+				const isMinePresentAtLocation =
+					currentPiece[1] === PieceInfo.Mine;
+
+				if (!isMinePresentAtLocation) continue; // Skip
+
+				// Neighbour Bound Validation
+				// Left
+				if (x > 0) {
+					placeHolderGrid[x - 1][y][2] += 1;
+				}
+				// Right
+				if (x < rows - 1) {
+					placeHolderGrid[x + 1][y][2] += 1;
+				}
+				// Top
+				if (y > 0) {
+					placeHolderGrid[x][y - 1][2] += 1;
+				}
+				// Bottom
+				if (y < cols - 1) {
+					placeHolderGrid[x][y + 1][2] += 1;
+				}
+				// Top Left
+				if (x > 0 && y > 0) {
+					placeHolderGrid[x - 1][y - 1][2] += 1;
+				}
+				// Bottom Left
+				if (x > 0 && y < cols - 1) {
+					placeHolderGrid[x - 1][y + 1][2] += 1;
+				}
+				// Top Right
+				if (x < rows - 1 && y > 0) {
+					placeHolderGrid[x + 1][y - 1][2] += 1;
+				}
+				// Bottom Right
+				if (x < rows - 1 && y < cols - 1) {
+					placeHolderGrid[x + 1][y + 1][2] += 1;
+				}
+			}
+		}
+
 		// console.log("After shuffle:", placeHolderGrid);
 		setGrid(placeHolderGrid);
 		setIsGameReady(true);
 	}
 
-	const buttonClasses =
-		"p-1 rounded-lg border-2 border-sky-400 bg-slate-800 text-sky-400 hover:border-slate-600 hover:bg-sky-200 hover:text-slate-800";
+	function ResetPiece(piece) {
+		if (piece) {
+			piece[0] = PieceStates.Closed;
+			piece[1] = PieceInfo.Empty;
+			piece[2] = 0;
+		}
+		return piece;
+	}
 
-	const gridPieceVisual = <button className={buttonClasses}>Piece</button>;
-	const gridVisual = <div>Grid</div>;
-	const amountOfMinesLeftVisual = <p>Amount</p>;
+	function RevealPiece(x, y) {
+		// Validation for safety
+		if (!(x >= 0 && x < grid.length && y >= 0 && y < grid[0].length)) {
+			console.log("Invalid Piece");
+			return;
+		}
+
+		let placeHolderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
+		placeHolderGrid[x][y][0] = PieceStates.Open;
+
+		setGrid(placeHolderGrid);
+	}
+
+	const buttonClasses =
+		"p-1 border-2 border-sky-400 bg-slate-800 text-sky-400 hover:border-slate-600 hover:bg-sky-200 hover:text-slate-800";
+
+	/*	TODO:
+	- Reveal around 0
+	- Add End Conditions
+	- Better UI
+	- 
+	*/
+
+	const drawGrid = () => {
+		return (
+			<div
+				className={`w-fit h-fit border-2 p-4 border-white bg-slate-700 flex flex-col justify-center items-center gap-2`}
+			>
+				{grid.map((row, rowIndex) => {
+					return (
+						<div
+							className="w-full h-full p-1 flex flex-row gap-1 justify-center items-center"
+							key={rowIndex}
+						>
+							{row.map((col, colIndex) => {
+								return (
+									<button
+										onClick={() => {
+											RevealPiece(rowIndex, colIndex);
+										}}
+										className={
+											"w-[40px] h-[40px] p-1 mx-auto" +
+											buttonClasses
+										}
+										key={colIndex}
+									>
+										{col[0] === PieceStates.Closed
+											? " "
+											: col[1] === PieceInfo.Empty
+											? col[2]
+											: "X"}
+									</button>
+								);
+							})}
+						</div>
+					);
+				})}
+			</div>
+		);
+	};
 
 	useEffect(() => {
 		console.clear();
@@ -173,8 +280,7 @@ export default function MineSweeper() {
 			<h1>Mine Sweeper</h1>
 			<button
 				onClick={() => {
-					initializeGrid(4, 4);
-					setGridRows(4);
+					initializeGrid(10, 10);
 				}}
 				className={buttonClasses}
 			>
@@ -190,36 +296,7 @@ export default function MineSweeper() {
 			</button>
 
 			<div className="min-h-screen w-full flex justify-center">
-				{isGameReady && (
-					<div
-						className={`w-fit h-fit border-2 p-6 border-white bg-slate-700 flex flex-col justify-center items-center gap-2`}
-					>
-						{grid.map((row, index) => {
-							return (
-								<div
-									className="w-full h-full p-1 border-2 flex flex-row gap-2 justify-center items-center"
-									key={index}
-								>
-									{row.map((col, index) => {
-										return (
-											<button
-												className={
-													"p-1 mx-auto w-[40px} h-[40px]" +
-													buttonClasses
-												}
-												key={index}
-											>
-												{col[1] === PieceInfo.Empty
-													? "O"
-													: "X"}
-											</button>
-										);
-									})}
-								</div>
-							);
-						})}
-					</div>
-				)}
+				{isGameReady && drawGrid()}
 			</div>
 		</div>
 	);
