@@ -252,7 +252,10 @@ export default function MineSweeper() {
 										}}
 										className={
 											"w-[40px] h-[40px] p-1 mx-auto" +
-											buttonClasses
+											buttonClasses +
+											(col[0] === PieceStates.Open)
+												? " bg-white text-black"
+												: " "
 										}
 										key={colIndex}
 									>
@@ -280,7 +283,7 @@ export default function MineSweeper() {
 			<h1>Mine Sweeper</h1>
 			<button
 				onClick={() => {
-					initializeGrid(10, 10);
+					initializeGrid(15, 15);
 				}}
 				className={buttonClasses}
 			>
@@ -288,7 +291,7 @@ export default function MineSweeper() {
 			</button>
 			<button
 				onClick={() => {
-					plantMines(0.1);
+					plantMines(0.3);
 				}}
 				className={buttonClasses}
 			>
