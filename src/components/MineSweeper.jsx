@@ -223,9 +223,6 @@ export default function MineSweeper() {
 		setGrid(placeHolderGrid);
 	}
 
-	const buttonClasses =
-		"p-1 border-2 border-sky-400 bg-slate-800 text-sky-400 hover:border-slate-600 hover:bg-sky-200 hover:text-slate-800";
-
 	/*	TODO:
 	- Reveal around 0
 	- Add End Conditions
@@ -233,29 +230,63 @@ export default function MineSweeper() {
 	- 
 	*/
 
+	// General
+	const buttonHover =
+		" duration-200 hover:scale-110 hover:border-sky-800 hover:bg-sky-50 hover:text-sky-800 ";
+
+	const buttonText = " text-sky-400 ";
+	const buttonSpacing = " p-1 ";
+
+	// Enabled
+	const buttonBorder = " border border-sky-600 ";
+	const buttonBackground = " bg-slate-800 ";
+
+	// Disabled
+	const buttonBackgroundDisabled = " bg-slate-900 ";
+	const buttonTextDisabled = " text-sky-400 text-xl ";
+	const buttonBorderDisabled = " border border-sky-600";
+
+	const buttonClassInactive =
+		buttonBorderDisabled +
+		buttonSpacing +
+		buttonBackgroundDisabled +
+		buttonTextDisabled;
+
+	const buttonClassActive =
+		buttonBorder +
+		buttonSpacing +
+		buttonBackground +
+		buttonText +
+		buttonHover;
+
 	const drawGrid = () => {
 		return (
 			<div
-				className={`w-fit h-fit border-2 p-4 border-white bg-slate-700 flex flex-col justify-center items-center gap-2`}
+				className={`w-fit h-fit border-2 p-4 bg-slate-900 flex flex-col justify-center items-center `}
 			>
 				{grid.map((row, rowIndex) => {
 					return (
 						<div
-							className="w-full h-full p-1 flex flex-row gap-1 justify-center items-center"
+							className="w-full h-full flex flex-row justify-center items-center"
 							key={rowIndex}
 						>
 							{row.map((col, colIndex) => {
 								return (
 									<button
+										disabled={
+											col[0] === PieceStates.Open
+												? true
+												: false
+										}
 										onClick={() => {
 											RevealPiece(rowIndex, colIndex);
+											console.log("Clicked a button!");
 										}}
 										className={
-											"w-[40px] h-[40px] p-1 mx-auto" +
-											buttonClasses +
-											(col[0] === PieceStates.Open)
-												? " bg-white text-black"
-												: " "
+											"w-[40px] h-[40px] mx-auto" +
+											(col[0] === PieceStates.Open
+												? buttonClassInactive
+												: buttonClassActive)
 										}
 										key={colIndex}
 									>
@@ -280,24 +311,25 @@ export default function MineSweeper() {
 
 	return (
 		<div>
-			<h1>Mine Sweeper</h1>
-			<button
-				onClick={() => {
-					initializeGrid(15, 15);
-				}}
-				className={buttonClasses}
-			>
-				Initialize Grid
-			</button>
-			<button
-				onClick={() => {
-					plantMines(0.3);
-				}}
-				className={buttonClasses}
-			>
-				Plant Mines
-			</button>
-
+			<div className="flex flex-col items-center justify-center gap-5 m-5">
+				<h1>Mine Sweeper</h1>
+				<button
+					onClick={() => {
+						initializeGrid(18, 22);
+					}}
+					className={buttonClassActive + " p-2 rounded-xl"}
+				>
+					Initialize Grid
+				</button>
+				<button
+					onClick={() => {
+						plantMines(0.3);
+					}}
+					className={buttonClassActive + " p-2 rounded-xl"}
+				>
+					Plant Mines
+				</button>
+			</div>
 			<div className="min-h-screen w-full flex justify-center">
 				{isGameReady && drawGrid()}
 			</div>

@@ -15,7 +15,7 @@ function App() {
 
 	return (
 		<main className="flex flex-col items-center justify-center">
-			<section className="w-[300px] sm:w-[500px] lg:w-[800px] flex flex-col justify-center min-h-screen">
+			<section className="w-[300px] sm:w-[500px] lg:w-1/2 flex flex-col justify-center min-h-screen">
 				{selectedGame === minigamesList.None ? (
 					<GameSelection
 						minigamesList={minigamesList}
