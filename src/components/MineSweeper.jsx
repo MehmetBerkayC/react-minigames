@@ -73,18 +73,25 @@ export default function MineSweeper() {
 	});
 
 	const [grid, setGrid] = useState([]);
-	const [isGameReady, setIsGameReady] = useState(false);
+	const [mineDensity, setMineDensity] = useState(0.3);
+	const [dimensionX, setDimensionX] = useState(3);
+	const [dimensionY, setDimensionY] = useState(3);
+	const [totalMines, setTotalMines] = useState(0);
+	const [unrevealedPieces, setUnrevealedPieces] = useState(0);
+
+	const [isGridInitialized, setIsGridInitialized] = useState(false);
+	const [isGameRenderReady, setIsGameRenderReady] = useState(false);
 	const [isGameOver, setIsGameOver] = useState(false);
 
-	function initializeGrid(n, m) {
-		setIsGameReady(false);
+	function initializeGrid() {
+		resetGameStates();
 		let placeHolderGrid = [];
 
 		// ORDER in piece -> [PieceState, PieceInfo, NeighbourInfo]
-		for (let x = 0; x < n; x++) {
+		for (let x = 0; x < dimensionX; x++) {
 			// row
 			placeHolderGrid.push([]);
-			for (let y = 0; y < m; y++) {
+			for (let y = 0; y < dimensionY; y++) {
 				// col
 				placeHolderGrid[x].push([
 					PieceStates.Closed,
@@ -95,21 +102,28 @@ export default function MineSweeper() {
 		}
 		// console.log("Initial grid:", placeHolderGrid);
 
+		setUnrevealedPieces(dimensionX * dimensionY);
 		setGrid(placeHolderGrid);
+		setIsGridInitialized(true);
 	}
 
-	function plantMines(mineDensity) {
+	function resetGameStates() {
+		setIsGameRenderReady(false);
+		setIsGameOver(false);
+	}
+
+	function plantMines() {
 		let placeHolderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
 
 		const rows = grid.length;
 		const cols = grid[0].length;
 
 		const amountOfMinesToPlant = Math.round(rows * cols * mineDensity);
+		setTotalMines(amountOfMinesToPlant);
 
 		// Determine mine locations
 		let flatMineGrid = new Array(rows * cols).fill(PieceInfo.Empty);
 		flatMineGrid.fill(PieceInfo.Mine, 0, amountOfMinesToPlant);
-
 		// console.log("Flat mine grid:", flatMineGrid, placeHolderGrid);
 
 		/* b is the part we change 
@@ -125,7 +139,7 @@ export default function MineSweeper() {
 			for (let y = 0; y < cols; y++) {
 				let piece = placeHolderGrid[x][y];
 				// Reset Piece
-				piece = ResetPiece(piece);
+				piece = resetPiece(piece);
 
 				// Insert Mine
 				piece[1] = flatMineGrid[x * cols + y];
@@ -200,11 +214,11 @@ export default function MineSweeper() {
 
 		// console.log("After shuffle:", placeHolderGrid);
 		setGrid(placeHolderGrid);
-		setIsGameReady(true);
+		setIsGameRenderReady(true);
 		setIsGameOver(false);
 	}
 
-	function ResetPiece(piece) {
+	function resetPiece(piece) {
 		if (piece) {
 			piece[0] = PieceStates.Closed;
 			piece[1] = PieceInfo.Empty;
@@ -213,7 +227,7 @@ export default function MineSweeper() {
 		return piece;
 	}
 
-	function RevealPiece(x, y) {
+	function revealPiece(x, y) {
 		if (isGameOver) return;
 
 		// Validation for safety
@@ -222,80 +236,35 @@ export default function MineSweeper() {
 			return;
 		}
 
+		// Reveal Piece
 		let placeHolderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
 		placeHolderGrid[x][y][0] = PieceStates.Open;
 
+		setUnrevealedPieces(unrevealedPieces - 1);
 		setGrid(placeHolderGrid);
-		// Check bomb
+
+		// Game Conditions
 		if (placeHolderGrid[x][y][1] === PieceInfo.Mine) {
-			requestAnimationFrame(() => {
-				// Wait for grid visual update
-				console.log("You lost!");
-				setIsGameOver(true);
-			});
+			// Loss
+			console.log("You Lost!");
+			setIsGameOver(true);
+		}
+
+		if (totalMines === unrevealedPieces) {
+			// Win
+			console.log("You Win!");
+			setIsGameOver(true);
 		}
 	}
-
-	function startGame() {
-		// Screen ratio max grid sizes
-		const belowSmallScreenGrid = [12, 8];
-		const smallToLargeScreenGrid = [20, 11];
-		const aboveLargeScreenGrid = [20, 22];
-
-		let mineDensity;
-
-		// Compare with screen sizes
-		/* 0<=640px 1<=1024px 2>=1024 */
-		let screenSize;
-		if (window.innerWidth <= 640) {
-			screenSize = 0;
-			mineDensity = 0.4;
-		}
-		if (window.innerWidth > 640 && window.innerWidth <= 1024) {
-			screenSize = 1;
-			mineDensity = 0.5;
-		}
-		if (window.innerWidth > 1024) {
-			screenSize = 2;
-			mineDensity = 0.6;
-		}
-
-		// console.log(screenSize, mineDensity);
-		// Begin the game
-		switch (screenSize) {
-			case 0:
-				initializeGrid(
-					belowSmallScreenGrid[0],
-					belowSmallScreenGrid[1]
-				);
-				break;
-			case 1:
-				initializeGrid(
-					smallToLargeScreenGrid[0],
-					smallToLargeScreenGrid[1]
-				);
-				break;
-			case 2:
-				initializeGrid(
-					aboveLargeScreenGrid[0],
-					aboveLargeScreenGrid[1]
-				);
-				break;
-		}
-
-		// Skip one frame before planting mines
-		requestAnimationFrame(() => {
-			plantMines(mineDensity);
-		});
-	}
-
-	// Get values by usestate - input field
-	// function startGameWithDimensions() {}
 
 	/*	TODO:
 	- Reveal around 0
-	- Add End Conditions
-	- Better UI
+	- Flagging
+	- Better UI : DONE
+	- Better Gameplay Loop
+		* Grid Initialization : DONE
+		* Grid Sizing and Mine Density : DONE
+		* Game Conditions : DONE
 	*/
 
 	// General
@@ -345,8 +314,7 @@ export default function MineSweeper() {
 												: false
 										}
 										onClick={() => {
-											RevealPiece(rowIndex, colIndex);
-											console.log("Clicked a button!");
+											revealPiece(rowIndex, colIndex);
 										}}
 										className={
 											"min-w-[30px] sm:w-[35px] lg:w-[40px] min-h-[30px] sm:h-[35px] lg:h-[40px] mx-auto" +
@@ -375,37 +343,88 @@ export default function MineSweeper() {
 		console.clear();
 	}, []);
 
+	const inputClass =
+		"border border-sky-800 w-[50px] rounded-sm bg-white text-center";
 	return (
 		<div>
-			<div className="flex flex-col items-center justify-center gap-5 m-5">
-				<h1>Mine Sweeper</h1>
+			<h1 className="text-3xl text-center font-semibold mt-5">
+				Mine Sweeper
+			</h1>
+			<div className="flex flex-col gap-2 justify-center items-center m-3">
+				<p className="text-xl text-center">Enter Grid Properties</p>
+				<div className="flex flex-row gap-3">
+					<label htmlFor="grid-dimensions-x" className="text-xl">
+						X:
+					</label>
+					<input
+						className={`${inputClass}`}
+						id="grid-dimensions-x"
+						name="grid-x"
+						type="number"
+						min={3}
+						max={50}
+						step={1}
+						onChange={(e) => setDimensionX(e.target.value)}
+						placeholder="3"
+					/>
+					<label htmlFor="grid-dimensions-y" className="text-xl">
+						Y:
+					</label>
+					<input
+						className={`${inputClass}`}
+						id="grid-dimensions-y"
+						name="grid-y"
+						type="number"
+						min={3}
+						max={50}
+						step={1}
+						onChange={(e) => setDimensionY(e.target.value)}
+						placeholder="3"
+					/>
+					<label htmlFor="mine-density" className="text-xl">
+						Mine Density:
+					</label>
+					<input
+						className={`${inputClass}`}
+						id="mine-density"
+						name="mine-density"
+						type="number"
+						min={0.1}
+						step={0.05}
+						max={0.9}
+						onChange={(e) => setMineDensity(e.target.value)}
+						placeholder="0.3"
+					/>
+				</div>
+			</div>
+			<div className="flex flex-row items-center justify-center gap-5 m-5">
 				<button
 					onClick={() => {
-						initializeGrid(20, 11);
+						initializeGrid();
 					}}
-					className={buttonClassActive + " p-2 rounded-xl"}
+					className={
+						buttonClassActive +
+						" p-2 rounded-xl " +
+						(isGridInitialized && !isGameOver ? " hidden " : "")
+					}
 				>
 					Initialize Grid
 				</button>
 				<button
 					onClick={() => {
-						startGame();
+						plantMines();
 					}}
-					className={buttonClassActive + " p-2 rounded-xl"}
+					className={
+						buttonClassActive +
+						" p-2 rounded-xl " +
+						(isGridInitialized ? "" : " hidden ")
+					}
 				>
-					Start Defaults
-				</button>
-				<button
-					onClick={() => {
-						plantMines(0.3);
-					}}
-					className={buttonClassActive + " p-2 rounded-xl"}
-				>
-					Plant Mines
+					{!isGameOver ? "Start Game" : "Play Again"}
 				</button>
 			</div>
 			<div className="min-h-screen w-full flex justify-center">
-				{isGameReady && drawGrid()}
+				{isGameRenderReady && drawGrid()}
 			</div>
 		</div>
 	);
