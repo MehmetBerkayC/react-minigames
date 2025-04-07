@@ -20,7 +20,7 @@ export default function DropDownButton(props) {
 					setToggleDropDown(!toggleDropDown);
 				}}
 				className={
-					`w-[400px] m-auto p-4 bg-slate-800 font-semibold text-xl text-white hover:bg-slate-200 hover:text-black` +
+					`max-w-[400px] m-auto p-4 bg-slate-800 font-semibold text-xl text-white hover:bg-slate-200 hover:text-black` +
 					(toggleDropDown
 						? " border-b rounded-t-2xl"
 						: " rounded-2xl")
