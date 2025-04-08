@@ -72,10 +72,14 @@ export default function MineSweeper() {
 		Flagged: "flagged",
 	});
 
+	const horizontalMin = 3;
+	const horizontalMax = 22;
+	const verticalMin = 3;
+	const verticalMax = 17;
 	const [grid, setGrid] = useState([]);
 	const [mineDensity, setMineDensity] = useState(0.3);
-	const [dimensionX, setDimensionX] = useState(3);
-	const [dimensionY, setDimensionY] = useState(3);
+	const [vertical, setVertical] = useState(3);
+	const [horizontal, setHorizontal] = useState(3);
 	const [totalMines, setTotalMines] = useState(0);
 	const [unrevealedPieces, setUnrevealedPieces] = useState(0);
 
@@ -88,10 +92,10 @@ export default function MineSweeper() {
 		let placeHolderGrid = [];
 
 		// ORDER in piece -> [PieceState, PieceInfo, NeighbourInfo]
-		for (let x = 0; x < dimensionX; x++) {
+		for (let x = 0; x < vertical; x++) {
 			// row
 			placeHolderGrid.push([]);
-			for (let y = 0; y < dimensionY; y++) {
+			for (let y = 0; y < horizontal; y++) {
 				// col
 				placeHolderGrid[x].push([
 					PieceStates.Closed,
@@ -102,7 +106,7 @@ export default function MineSweeper() {
 		}
 		// console.log("Initial grid:", placeHolderGrid);
 
-		setUnrevealedPieces(dimensionX * dimensionY);
+		setUnrevealedPieces(vertical * horizontal);
 		setGrid(placeHolderGrid);
 		setIsGridInitialized(true);
 	}
@@ -110,6 +114,28 @@ export default function MineSweeper() {
 	function resetGameStates() {
 		setIsGameRenderReady(false);
 		setIsGameOver(false);
+	}
+
+	function checkSizeValidity(value, isVertical) {
+		if (isVertical) {
+			// Valid X
+			setVertical(
+				value < verticalMin
+					? verticalMin
+					: value <= verticalMax
+					? value
+					: verticalMax
+			);
+		} else {
+			// Valid Y
+			setHorizontal(
+				value < horizontalMin
+					? horizontalMin
+					: value <= horizontalMax
+					? value
+					: horizontalMax
+			);
+		}
 	}
 
 	function plantMines() {
@@ -246,13 +272,13 @@ export default function MineSweeper() {
 		// Game Conditions
 		if (placeHolderGrid[x][y][1] === PieceInfo.Mine) {
 			// Loss
-			console.log("You Lost!");
+			alert("You Lost!");
 			setIsGameOver(true);
 		}
 
 		if (totalMines === unrevealedPieces) {
 			// Win
-			console.log("You Win!");
+			alert().log("You Win!");
 			setIsGameOver(true);
 		}
 	}
@@ -351,34 +377,38 @@ export default function MineSweeper() {
 				Mine Sweeper
 			</h1>
 			<div className="flex flex-col gap-2 justify-center items-center m-3">
-				<p className="text-xl text-center">Enter Grid Properties</p>
+				<p className="text-xl text-center">
+					Enter Grid Properties &rarr; Max {horizontalMax}x
+					{verticalMax}
+				</p>
 				<div className="flex flex-row gap-3">
-					<label htmlFor="grid-dimensions-x" className="text-xl">
-						X:
+					<label htmlFor="grid-horizontal" className="text-xl">
+						Width:
 					</label>
 					<input
 						className={`${inputClass}`}
-						id="grid-dimensions-x"
-						name="grid-x"
+						id="grid-horizontal"
+						name="grid-horizontal"
 						type="number"
-						min={3}
-						max={50}
-						step={1}
-						onChange={(e) => setDimensionX(e.target.value)}
+						onChange={(e) =>
+							checkSizeValidity(e.target.value, false)
+						}
 						placeholder="3"
 					/>
-					<label htmlFor="grid-dimensions-y" className="text-xl">
-						Y:
+					<label htmlFor="grid-vertical" className="text-xl">
+						Height:
 					</label>
 					<input
 						className={`${inputClass}`}
-						id="grid-dimensions-y"
-						name="grid-y"
+						id="grid-vertical"
+						name="grid-vertical"
 						type="number"
 						min={3}
-						max={50}
+						max={22}
 						step={1}
-						onChange={(e) => setDimensionY(e.target.value)}
+						onChange={(e) =>
+							checkSizeValidity(e.target.value, true)
+						}
 						placeholder="3"
 					/>
 					<label htmlFor="mine-density" className="text-xl">
@@ -389,9 +419,6 @@ export default function MineSweeper() {
 						id="mine-density"
 						name="mine-density"
 						type="number"
-						min={0.1}
-						step={0.05}
-						max={0.9}
 						onChange={(e) => setMineDensity(e.target.value)}
 						placeholder="0.3"
 					/>
