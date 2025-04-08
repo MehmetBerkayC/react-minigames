@@ -263,14 +263,22 @@ export default function MineSweeper() {
 		}
 
 		// Reveal Piece
-		let placeHolderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
-		placeHolderGrid[x][y][0] = PieceStates.Open;
+		let placeholderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
 
-		setUnrevealedPieces(unrevealedPieces - 1);
-		setGrid(placeHolderGrid);
+		// Open all 0's when clicked on a 0
+		if (placeholderGrid[x][y][2] === 0) {
+			// current piece index, Grid itself, searching for which neighbourInfo
+			// x-y, placeholderGrid, 0
+			floodFill(x, y, placeholderGrid, 0);
+		} else {
+			placeholderGrid[x][y][0] = PieceStates.Open;
+
+			setUnrevealedPieces(unrevealedPieces - 1);
+			setGrid(placeholderGrid);
+		}
 
 		// Game Conditions
-		if (placeHolderGrid[x][y][1] === PieceInfo.Mine) {
+		if (placeholderGrid[x][y][1] === PieceInfo.Mine) {
 			// Loss
 			alert("You Lost!");
 			setIsGameOver(true);
@@ -280,6 +288,46 @@ export default function MineSweeper() {
 			// Win
 			alert().log("You Win!");
 			setIsGameOver(true);
+		}
+	}
+
+	function floodFill(x, y, placeholderGrid, neighbourInfoToReveal) {
+		/* TODO:
+		Root - Current Function
+		Already checked validity
+		Reveal the current one
+		queue the neighbours
+		*/
+		const rows = placeholderGrid.length;
+		const columns = placeholderGrid[0].length;
+
+		const piece = placeholderGrid[x][y];
+		piece[0] = PieceStates.Open;
+
+		/*
+		BFS - Recursive Function
+		- Pop queue - Decide Queue or another system
+		- Check Boundaries
+			-> Current piece is 0, Inbound Grid - Reveal
+				-> recursively call non-diagonal neighbours
+			-> Go back/stop
+		*/
+	}
+
+	function searchBFS(x, y, placeholderGrid, neighbourInfoToReveal) {
+		const rows = placeholderGrid.length;
+		const columns = placeholderGrid[0].length;
+		const piece = placeholderGrid[x][y];
+
+		// Out of bounds or already checked
+		if (
+			x < 0 ||
+			x >= rows ||
+			y < 0 ||
+			y >= columns ||
+			piece[2] != neighbourInfoToReveal
+		) {
+			return;
 		}
 	}
 
