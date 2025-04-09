@@ -76,8 +76,11 @@ export default function MineSweeper() {
 	const horizontalMax = 22;
 	const verticalMin = 3;
 	const verticalMax = 17;
+	const minMineDensity = 0.1;
+	const maxMineDensity = 0.9;
+
 	const [grid, setGrid] = useState([]);
-	const [mineDensity, setMineDensity] = useState(0.3);
+	const [mineDensity, setMineDensity] = useState(0.2);
 	const [vertical, setVertical] = useState(3);
 	const [horizontal, setHorizontal] = useState(3);
 	const [totalMines, setTotalMines] = useState(0);
@@ -144,7 +147,15 @@ export default function MineSweeper() {
 		const rows = grid.length;
 		const cols = grid[0].length;
 
-		const amountOfMinesToPlant = Math.round(rows * cols * mineDensity);
+		const amountOfMinesToPlant = Math.round(
+			rows *
+				cols *
+				(minMineDensity > mineDensity
+					? minMineDensity
+					: maxMineDensity < mineDensity
+					? maxMineDensity
+					: mineDensity)
+		);
 		setTotalMines(amountOfMinesToPlant);
 
 		// Determine mine locations
@@ -264,21 +275,24 @@ export default function MineSweeper() {
 
 		// Reveal Piece
 		let placeholderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
+		const piece = placeholderGrid[x][y];
+
+		// Already Open
+		if (piece[0] === PieceStates.Open) return;
 
 		// Open all 0's when clicked on a 0
-		if (placeholderGrid[x][y][2] === 0) {
-			// current piece index, Grid itself, searching for which neighbourInfo
+		if (piece[2] === 0) {
 			// x-y, placeholderGrid, 0
 			floodFill(x, y, placeholderGrid, 0);
 		} else {
-			placeholderGrid[x][y][0] = PieceStates.Open;
+			piece[0] = PieceStates.Open;
 
-			setUnrevealedPieces(unrevealedPieces - 1);
+			setUnrevealedPieces((prev) => prev - 1);
 			setGrid(placeholderGrid);
 		}
 
 		// Game Conditions
-		if (placeholderGrid[x][y][1] === PieceInfo.Mine) {
+		if (piece[1] === PieceInfo.Mine) {
 			// Loss
 			alert("You Lost!");
 			setIsGameOver(true);
@@ -291,48 +305,67 @@ export default function MineSweeper() {
 		}
 	}
 
+	// current piece indexes, grid itself, searching for which neighbourInfo
 	function floodFill(x, y, placeholderGrid, neighbourInfoToReveal) {
-		/* TODO:
-		Root - Current Function
-		Already checked validity
-		Reveal the current one
-		queue the neighbours
-		*/
-		const rows = placeholderGrid.length;
-		const columns = placeholderGrid[0].length;
+		// TRY BFS NEXT
+		const visited = new Set();
+		let revealedPiecesCount = 0;
 
-		const piece = placeholderGrid[x][y];
-		piece[0] = PieceStates.Open;
+		// This function being nested bad for long-term
+		function searchDFS(x, y) {
+			/*
+			DFS - Recursive Function
+			- Check Boundaries
+			-> Current piece is not a mine, not open, not visited, Inbounds of the grid 
+				-> Reveal
+				-> call neighbours if we are 0
+			-> Off Limits
+				-> Go back/stop
+			*/
+			const key = `${x},${y}`; // Store x-y pairs
 
-		/*
-		BFS - Recursive Function
-		- Pop queue - Decide Queue or another system
-		- Check Boundaries
-			-> Current piece is 0, Inbound Grid - Reveal
-				-> recursively call non-diagonal neighbours
-			-> Go back/stop
-		*/
-	}
+			// Bounds and Visited Already Check
+			if (
+				x < 0 ||
+				x >= placeholderGrid.length ||
+				y < 0 ||
+				y >= placeholderGrid[0].length ||
+				visited.has(key)
+			) {
+				return;
+			}
 
-	function searchBFS(x, y, placeholderGrid, neighbourInfoToReveal) {
-		const rows = placeholderGrid.length;
-		const columns = placeholderGrid[0].length;
-		const piece = placeholderGrid[x][y];
+			// Validity
+			const piece = placeholderGrid[x][y];
+			if (piece[0] === PieceStates.Open && piece[1] === PieceInfo.Mine) {
+				return;
+			}
 
-		// Out of bounds or already checked
-		if (
-			x < 0 ||
-			x >= rows ||
-			y < 0 ||
-			y >= columns ||
-			piece[2] != neighbourInfoToReveal
-		) {
-			return;
+			visited.add(key);
+			piece[0] = PieceStates.Open;
+			revealedPiecesCount++;
+
+			// Call neighbours if we are 0
+			if (piece[2] === neighbourInfoToReveal) {
+				searchDFS(x + 1, y);
+				searchDFS(x + 1, y - 1);
+				searchDFS(x + 1, y + 1);
+				searchDFS(x - 1, y);
+				searchDFS(x - 1, y + 1);
+				searchDFS(x - 1, y - 1);
+				searchDFS(x, y + 1);
+				searchDFS(x, y - 1);
+			}
 		}
+
+		// Update
+		searchDFS(x, y);
+		setUnrevealedPieces((prev) => prev - revealedPiecesCount);
+		setGrid(placeholderGrid);
 	}
 
 	/*	TODO:
-	- Reveal around 0
+	- Reveal around 0 - DONE -> Suboptimal
 	- Flagging
 	- Better UI : DONE
 	- Better Gameplay Loop
@@ -349,7 +382,7 @@ export default function MineSweeper() {
 	const buttonText = " text-sky-400 text-sm sm:text-base lg:text-xl ";
 	const buttonTextDisabled = " text-sky-500 text-sm sm:text-base lg:text-xl ";
 
-	const buttonBackground = " bg-slate-800 ";
+	const buttonBackground = " bg-slate-700 ";
 	const buttonBackgroundDisabled = " bg-slate-900 ";
 
 	const buttonBorder = " border border-sky-600 ";
