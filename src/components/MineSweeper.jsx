@@ -281,7 +281,7 @@ export default function MineSweeper() {
 		if (piece[0] === PieceStates.Open) return;
 
 		// Open all 0's when clicked on a 0
-		if (piece[2] === 0) {
+		if (piece[2] === 0 && piece[1] != PieceInfo.Mine) {
 			// x-y, placeholderGrid, 0
 			floodFill(x, y, placeholderGrid, 0);
 		} else {
