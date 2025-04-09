@@ -84,14 +84,14 @@ export default function MineSweeper() {
 	const [vertical, setVertical] = useState(3);
 	const [horizontal, setHorizontal] = useState(3);
 	const [totalMines, setTotalMines] = useState(0);
+
 	const [unrevealedPieces, setUnrevealedPieces] = useState(0);
 
 	const [isGridInitialized, setIsGridInitialized] = useState(false);
 	const [isGameRenderReady, setIsGameRenderReady] = useState(false);
-	const [isGameOver, setIsGameOver] = useState(false);
+	const [isGameOver, setIsGameOver] = useState(true);
 
 	function initializeGrid() {
-		resetGameStates();
 		let placeHolderGrid = [];
 
 		// ORDER in piece -> [PieceState, PieceInfo, NeighbourInfo]
@@ -115,8 +115,13 @@ export default function MineSweeper() {
 	}
 
 	function resetGameStates() {
-		setIsGameRenderReady(false);
-		setIsGameOver(false);
+		setUnrevealedPieces(0);
+		setTotalMines(0);
+		setIsGridInitialized(false);
+		setIsGameOver(true);
+		// // Can't reset below until I make some other render option
+		// setIsGameRenderReady(false);
+		// setGrid([]);
 	}
 
 	function checkSizeValidity(value, isVertical) {
@@ -295,13 +300,18 @@ export default function MineSweeper() {
 		if (piece[1] === PieceInfo.Mine) {
 			// Loss
 			alert("You Lost!");
-			setIsGameOver(true);
+			resetGameStates();
 		}
 
+		console.log(
+			totalMines,
+			unrevealedPieces,
+			" TotalMines, UnrevealedPieces"
+		);
 		if (totalMines === unrevealedPieces) {
 			// Win
-			alert().log("You Win!");
-			setIsGameOver(true);
+			alert("You Win!");
+			resetGameStates();
 		}
 	}
 
@@ -457,6 +467,7 @@ export default function MineSweeper() {
 			<h1 className="text-3xl text-center font-semibold mt-5">
 				Mine Sweeper
 			</h1>
+
 			<div className="flex flex-col gap-2 justify-center items-center m-3">
 				<p className="text-xl text-center">
 					Enter Grid Properties &rarr; Max {horizontalMax}x
@@ -528,7 +539,7 @@ export default function MineSweeper() {
 						(isGridInitialized ? "" : " hidden ")
 					}
 				>
-					{!isGameOver ? "Start Game" : "Play Again"}
+					{isGameOver ? "Start Game" : "Play Again"}
 				</button>
 			</div>
 			<div className="min-h-screen w-full flex justify-center">
