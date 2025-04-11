@@ -112,6 +112,7 @@ export default function MineSweeper() {
 		setUnrevealedPieces(vertical * horizontal);
 		setGrid(placeHolderGrid);
 		setIsGridInitialized(true);
+		setIsGameRenderReady(false);
 	}
 
 	function resetGameStates() {
@@ -303,22 +304,17 @@ export default function MineSweeper() {
 			resetGameStates();
 		}
 
-		console.log(
-			totalMines,
-			unrevealedPieces,
-			" TotalMines, UnrevealedPieces"
-		);
-		if (totalMines === unrevealedPieces) {
-			// Win
-			alert("You Win!");
-			resetGameStates();
-		}
+		// if (totalMines === unrevealedPieces) {
+		// 	// Win
+		// 	alert("You Win!");
+		// 	resetGameStates();
+		// }
 	}
 
 	// current piece indexes, grid itself, searching for which neighbourInfo
 	function floodFill(x, y, placeholderGrid, neighbourInfoToReveal) {
 		// TRY BFS NEXT
-		const visited = new Set();
+		const visited = new Set(); // no duplicates
 		let revealedPiecesCount = 0;
 
 		// This function being nested bad for long-term
@@ -347,7 +343,7 @@ export default function MineSweeper() {
 
 			// Validity
 			const piece = placeholderGrid[x][y];
-			if (piece[0] === PieceStates.Open && piece[1] === PieceInfo.Mine) {
+			if (piece[0] === PieceStates.Open || piece[1] === PieceInfo.Mine) {
 				return;
 			}
 
@@ -460,6 +456,21 @@ export default function MineSweeper() {
 		console.clear();
 	}, []);
 
+	useEffect(() => {
+		if (isGameOver) return;
+		console.log(
+			"Win Check:",
+			totalMines,
+			unrevealedPieces,
+			" TotalMines, UnrevealedPieces"
+		);
+		if (totalMines === unrevealedPieces) {
+			// Win
+			alert("You Win!");
+			resetGameStates();
+		}
+	}, [totalMines, unrevealedPieces, isGameOver]);
+
 	const inputClass =
 		"border border-sky-800 w-[50px] rounded-sm bg-white text-center";
 	return (
@@ -522,12 +533,13 @@ export default function MineSweeper() {
 						initializeGrid();
 					}}
 					className={
-						buttonClassActive +
-						" p-2 rounded-xl " +
-						(isGridInitialized && !isGameOver ? " hidden " : "")
+						buttonClassActive + " p-2 rounded-xl "
+						// +(isGridInitialized && !isGameOver ? " hidden " : "")
 					}
 				>
-					Initialize Grid
+					{isGridInitialized && !isGameOver
+						? "Resize Grid"
+						: "Setup Grid"}
 				</button>
 				<button
 					onClick={() => {
@@ -539,7 +551,7 @@ export default function MineSweeper() {
 						(isGridInitialized ? "" : " hidden ")
 					}
 				>
-					{isGameOver ? "Start Game" : "Play Again"}
+					{isGameOver ? "Start Game" : "Restart"}
 				</button>
 			</div>
 			<div className="min-h-screen w-full flex justify-center">
