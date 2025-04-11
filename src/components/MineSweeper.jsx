@@ -275,7 +275,7 @@ export default function MineSweeper() {
 
 		// Validation for safety
 		if (!(x >= 0 && x < grid.length && y >= 0 && y < grid[0].length)) {
-			console.log("Invalid Piece");
+			// console.log("Invalid Piece");
 			return;
 		}
 
@@ -458,12 +458,12 @@ export default function MineSweeper() {
 
 	useEffect(() => {
 		if (isGameOver) return;
-		console.log(
-			"Win Check:",
-			totalMines,
-			unrevealedPieces,
-			" TotalMines, UnrevealedPieces"
-		);
+		// console.log(
+		// 	"Win Check:",
+		// 	totalMines,
+		// 	unrevealedPieces,
+		// 	" TotalMines, UnrevealedPieces"
+		// );
 		if (totalMines === unrevealedPieces) {
 			// Win
 			alert("You Win!");
