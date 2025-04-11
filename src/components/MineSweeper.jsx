@@ -90,6 +90,7 @@ export default function MineSweeper() {
 	const [isGridInitialized, setIsGridInitialized] = useState(false);
 	const [isGameRenderReady, setIsGameRenderReady] = useState(false);
 	const [isGameOver, setIsGameOver] = useState(true);
+	const [isFlagModeOn, setIsFlagModeOn] = useState(false);
 
 	function initializeGrid() {
 		let placeHolderGrid = [];
@@ -285,18 +286,33 @@ export default function MineSweeper() {
 		let placeholderGrid = JSON.parse(JSON.stringify(grid)); // Deep copy
 		const piece = placeholderGrid[x][y];
 
-		// Already Open
+		// Piece Already Open
 		if (piece[0] === PieceStates.Open) return;
 
-		// Open all 0's when clicked on a 0
+		// Flag Mode
+		if (isFlagModeOn) {
+			piece[0] =
+				piece[0] === PieceStates.Closed
+					? PieceStates.Flagged
+					: PieceStates.Closed;
+
+			setGrid(placeholderGrid); // Update Grid
+			return;
+		}
+
+		// Piece is Flagged
+		if (piece[0] === PieceStates.Flagged) return;
+
+		// Open Piece
 		if (piece[2] === 0 && piece[1] != PieceInfo.Mine) {
-			// x-y, placeholderGrid, 0
+			// x-y, placeholderGrid, 0 -> Clicked on a 0
 			floodFill(x, y, placeholderGrid, 0);
 		} else {
+			// Regular piece
 			piece[0] = PieceStates.Open;
 
 			setUnrevealedPieces((prev) => prev - 1);
-			setGrid(placeholderGrid);
+			setGrid(placeholderGrid); // Update Grid
 		}
 
 		// Game Conditions
@@ -323,8 +339,8 @@ export default function MineSweeper() {
 		function searchDFS(x, y) {
 			/*
 			DFS - Recursive Function
-			- Check Boundaries
-			-> Current piece is not a mine, not open, not visited, Inbounds of the grid 
+			- Check Boundaries and Validity
+			-> Current piece is not a mine, not open, not visited, not flagged, Inbounds of the grid 
 				-> Reveal
 				-> call neighbours if we are 0
 			-> Off Limits
@@ -343,9 +359,13 @@ export default function MineSweeper() {
 				return;
 			}
 
-			// Validity
+			// Validity - NOT -> flagged, open, mine
 			const piece = placeholderGrid[x][y];
-			if (piece[0] === PieceStates.Open || piece[1] === PieceInfo.Mine) {
+			if (
+				piece[0] === PieceStates.Open ||
+				piece[0] === PieceStates.Flagged ||
+				piece[1] === PieceInfo.Mine
+			) {
 				return;
 			}
 
@@ -372,9 +392,14 @@ export default function MineSweeper() {
 		setGrid(placeholderGrid);
 	}
 
+	function toggleFlagMode() {
+		setIsFlagModeOn(!isFlagModeOn);
+	}
+
 	/*	TODO:
 	- Reveal around 0 - DONE -> Suboptimal
-	- Flagging
+	- Flagging - DONE 
+		-> ADD: Display unflagged mines / mines left number
 	- Better UI : DONE
 	- Better Gameplay Loop
 		* Grid Initialization : DONE
@@ -441,6 +466,8 @@ export default function MineSweeper() {
 									>
 										{col[0] === PieceStates.Closed
 											? " "
+											: col[0] === PieceStates.Flagged
+											? "🚩"
 											: col[1] === PieceInfo.Empty
 											? col[2]
 											: "X"}
@@ -459,18 +486,19 @@ export default function MineSweeper() {
 	}, []);
 
 	useEffect(() => {
+		// Check Win Condition
 		if (isGameOver) return;
+		if (totalMines === unrevealedPieces) {
+			// Win
+			alert("You Win!");
+			resetGameStates();
+		}
 		// console.log(
 		// 	"Win Check:",
 		// 	totalMines,
 		// 	unrevealedPieces,
 		// 	" TotalMines, UnrevealedPieces"
 		// );
-		if (totalMines === unrevealedPieces) {
-			// Win
-			alert("You Win!");
-			resetGameStates();
-		}
 	}, [totalMines, unrevealedPieces, isGameOver]);
 
 	const inputClass =
@@ -559,7 +587,7 @@ export default function MineSweeper() {
 				</button>
 				<button
 					onClick={() => {
-						alert("Flagging Feature On Progress!");
+						toggleFlagMode();
 					}}
 					className={
 						buttonClassActive +
@@ -567,7 +595,7 @@ export default function MineSweeper() {
 						(isGridInitialized && !isGameOver ? "" : " hidden ")
 					}
 				>
-					Flag Mode
+					{isFlagModeOn ? "Disable Flag Mode" : "Activate Flag Mode"}
 				</button>
 			</div>
 			<div className="min-h-screen w-full flex justify-center">
