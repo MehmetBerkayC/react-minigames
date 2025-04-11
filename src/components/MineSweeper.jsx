@@ -112,7 +112,9 @@ export default function MineSweeper() {
 		setUnrevealedPieces(vertical * horizontal);
 		setGrid(placeHolderGrid);
 		setIsGridInitialized(true);
+
 		setIsGameRenderReady(false);
+		setIsGameOver(true);
 	}
 
 	function resetGameStates() {
@@ -493,6 +495,7 @@ export default function MineSweeper() {
 						id="grid-horizontal"
 						name="grid-horizontal"
 						type="number"
+						min={3}
 						onChange={(e) =>
 							checkSizeValidity(e.target.value, false)
 						}
@@ -507,21 +510,22 @@ export default function MineSweeper() {
 						name="grid-vertical"
 						type="number"
 						min={3}
-						max={22}
-						step={1}
 						onChange={(e) =>
 							checkSizeValidity(e.target.value, true)
 						}
 						placeholder="3"
 					/>
 					<label htmlFor="mine-density" className="text-xl">
-						Mine Density:
+						Mine Density [0.1-0.9]:
 					</label>
 					<input
 						className={`${inputClass}`}
 						id="mine-density"
 						name="mine-density"
 						type="number"
+						min={0.1}
+						max={0.9}
+						step={0.1}
 						onChange={(e) => setMineDensity(e.target.value)}
 						placeholder="0.3"
 					/>
@@ -552,6 +556,18 @@ export default function MineSweeper() {
 					}
 				>
 					{isGameOver ? "Start Game" : "Restart"}
+				</button>
+				<button
+					onClick={() => {
+						alert("Flagging Feature On Progress!");
+					}}
+					className={
+						buttonClassActive +
+						" p-2 rounded-xl " +
+						(isGridInitialized && !isGameOver ? "" : " hidden ")
+					}
+				>
+					Flag Mode
 				</button>
 			</div>
 			<div className="min-h-screen w-full flex justify-center">
