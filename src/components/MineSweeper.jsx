@@ -75,7 +75,7 @@ export default function MineSweeper() {
 	const horizontalMin = 3;
 	const horizontalMax = 22;
 	const verticalMin = 3;
-	const verticalMax = 17;
+	const verticalMax = 15;
 	const minMineDensity = 0.1;
 	const maxMineDensity = 0.9;
 
@@ -598,7 +598,7 @@ export default function MineSweeper() {
 					{isFlagModeOn ? "Disable Flag Mode" : "Activate Flag Mode"}
 				</button>
 			</div>
-			<div className="min-h-screen w-full flex justify-center">
+			<div className="flex justify-center">
 				{isGameRenderReady && drawGrid()}
 			</div>
 		</div>

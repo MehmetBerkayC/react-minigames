@@ -1,33 +1,48 @@
 @import "tailwindcss";
 
 :root {
-	--color-palette-red-1: #ff204e;
-	--color-palette-red-2: #a0153e;
-	--color-palette-red-3: #5d0e41;
-	--color-palette-red-4: #00224d;
-}
-
-html {
-	width: 100%;
-	height: 100vh;
-	background: radial-gradient(
-		circle,
-		var(--color-palette-red-4),
-		var(--color-palette-red-3) 10%,
-		var(--color-palette-red-3),
-		var(--color-palette-red-2),
-		var(--color-palette-red-1),
-		black
-	);
-	overflow: hidden;
+	--color-palette-red-1: rgb(255, 32, 78);
+	--color-palette-red-2: rgb(160, 21, 62);
+	--color-palette-red-3: rgb(93, 14, 65);
+	--color-palette-red-4: rgb(0, 34, 77);
 }
 
 * {
 	box-sizing: border-box;
 }
 
-section {
+.background-with-tint-1 {
+	background: scroll;
+	height: 100vh;
+	background-image: radial-gradient(
+			circle,
+			rgba(93, 14, 110, 0.2),
+			rgba(160, 21, 80, 0.2),
+			rgba(170, 30, 70, 0.3),
+			black
+		),
+		url("/retro-game-bg.jpg");
+
+	background-size: contain;
+	background-repeat: repeat;
+}
+
+.background-with-tint-2 {
+	background: scroll;
+	height: 100vh;
+	background-image: radial-gradient(
+			rgba(93, 14, 110, 0.2),
+			rgba(160, 21, 80, 0.2),
+			rgba(170, 30, 70, 0.3),
+			black
+		),
+		url("/retro-game-bg1.jpg");
+
+	background-size: 100% 100%;
+	background-repeat: repeat;
+}
+
+.custom-section {
 	background-color: gray;
 	opacity: 0.8;
-	border: 2px solid orange;
 }

@@ -161,7 +161,7 @@ export default function TicTacToe() {
 	// console.log(board);
 	// CSS Breakpoints -> default sm lg
 	return (
-		<div className="flex flex-col items-center justify-center h-screen gap-4">
+		<div className="flex flex-col items-center justify-center gap-4">
 			{!didGameStart && (
 				<PinkButton onClickFunc={startGame} text="Play Tic-Tac-Toe" />
 			)}
