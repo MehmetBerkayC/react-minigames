@@ -407,42 +407,15 @@ export default function MineSweeper() {
 		* Game Conditions : DONE
 	*/
 
-	// General
-	const buttonHover =
-		" duration-200 hover:scale-110 hover:border-sky-800 hover:bg-sky-50 hover:text-sky-800 ";
-	const buttonSpacing = " p-1 ";
-
-	const buttonText = " text-sky-400 text-sm sm:text-base lg:text-xl ";
-	const buttonTextDisabled = " text-sky-500 text-sm sm:text-base lg:text-xl ";
-
-	const buttonBackground = " bg-slate-700 ";
-	const buttonBackgroundDisabled = " bg-slate-900 ";
-
-	const buttonBorder = " border border-sky-600 ";
-	const buttonBorderDisabled = " border border-sky-600";
-
-	const buttonClassInactive =
-		buttonBorderDisabled +
-		buttonSpacing +
-		buttonBackgroundDisabled +
-		buttonTextDisabled;
-
-	const buttonClassActive =
-		buttonBorder +
-		buttonSpacing +
-		buttonBackground +
-		buttonText +
-		buttonHover;
-
 	const drawGrid = () => {
 		return (
 			<div
-				className={`w-fit h-fit border-2 p-4 bg-slate-900 flex flex-col justify-center items-center `}
+				className={`border-2 rounded-md p-3 md:p-4 bg-slate-900 flex flex-col justify-center items-center `}
 			>
 				{grid.map((row, rowIndex) => {
 					return (
 						<div
-							className="w-full h-full flex flex-row justify-center items-center"
+							className="flex flex-row justify-center items-center"
 							key={rowIndex}
 						>
 							{row.map((col, colIndex) => {
@@ -457,10 +430,10 @@ export default function MineSweeper() {
 											revealPiece(rowIndex, colIndex);
 										}}
 										className={
-											"min-w-[30px] sm:w-[35px] lg:w-[40px] min-h-[30px] sm:h-[35px] lg:h-[40px] mx-auto" +
+											"w-[30px] md:w-[35px] lg:w-[40px] h-[30px] md:h-[35px] lg:h-[40px] mx-auto" +
 											(col[0] === PieceStates.Open
-												? buttonClassInactive
-												: buttonClassActive)
+												? gridButtonInactive
+												: gridButtonActive)
 										}
 										key={colIndex}
 									>
@@ -480,6 +453,48 @@ export default function MineSweeper() {
 			</div>
 		);
 	};
+
+	// General
+	const buttonHover =
+		" duration-200 hover:scale-110 hover:border-sky-800 hover:bg-sky-50 hover:text-sky-800 ";
+	const buttonSpacing = " p-2 ";
+
+	const buttonText = " text-sky-400 text-xs md:text-sm lg:text-base ";
+	const buttonTextDisabled = " text-sky-500 text-xs md:text-sm lg:text-base ";
+
+	const buttonBackground = " bg-slate-700 ";
+	const buttonBackgroundDisabled = " bg-slate-900 ";
+
+	const buttonBorder = " border border-sky-600 ";
+	const buttonBorderDisabled = " border border-sky-600 ";
+
+	const buttonActive =
+		buttonBorder +
+		" rounded-md " +
+		buttonSpacing +
+		buttonBackground +
+		buttonText +
+		buttonHover;
+
+	const gridButtonActive =
+		buttonBorder +
+		buttonSpacing +
+		buttonBackground +
+		buttonText +
+		buttonHover;
+
+	const gridButtonInactive =
+		buttonBorderDisabled +
+		buttonSpacing +
+		buttonBackgroundDisabled +
+		buttonTextDisabled;
+
+	const headlineText = " text-base md:text-lg lg:text-xl text-center ";
+	const paragraphText = " text-sm md:text-base lg:text-lg text-center ";
+	const labelText = " text-xs md:text-sm lg:text-base text-center ";
+
+	const inputClass =
+		" border border-sky-800 w-[40px] rounded-sm bg-white text-center m-1 md:m-2 lg:m-3";
 
 	useEffect(() => {
 		console.clear();
@@ -501,71 +516,72 @@ export default function MineSweeper() {
 		// );
 	}, [totalMines, unrevealedPieces, isGameOver]);
 
-	const inputClass =
-		"border border-sky-800 w-[50px] rounded-sm bg-white text-center";
 	return (
 		<div>
-			<h1 className="text-3xl text-center font-semibold mt-5">
+			<h1 className={headlineText + " font-bold mt-3 md:mt-4 lg:mt-5"}>
 				Mine Sweeper
 			</h1>
 
-			<div className="flex flex-col gap-2 justify-center items-center m-3">
-				<p className="text-xl text-center">
-					Enter Grid Properties &rarr; Max {horizontalMax}x
-					{verticalMax}
+			<div className="flex flex-col gap-2 justify-center items-center">
+				<p className={paragraphText + " text-center font-semibold "}>
+					Enter Grid Properties &rarr;{" "}
+					<span className="text-red-900">
+						{" "}
+						Max {horizontalMax}x{verticalMax}
+					</span>
 				</p>
-				<div className="flex flex-row gap-3">
-					<label htmlFor="grid-horizontal" className="text-xl">
+				<div className="flex flex-row gap-1 md:gap-2 mx-4">
+					<label htmlFor="grid-horizontal" className={labelText}>
 						Width:
+						<input
+							className={inputClass}
+							id="grid-horizontal"
+							name="grid-horizontal"
+							type="number"
+							min={3}
+							onChange={(e) =>
+								checkSizeValidity(e.target.value, false)
+							}
+							placeholder="3"
+						/>
 					</label>
-					<input
-						className={`${inputClass}`}
-						id="grid-horizontal"
-						name="grid-horizontal"
-						type="number"
-						min={3}
-						onChange={(e) =>
-							checkSizeValidity(e.target.value, false)
-						}
-						placeholder="3"
-					/>
-					<label htmlFor="grid-vertical" className="text-xl">
+					<label htmlFor="grid-vertical" className={labelText}>
 						Height:
+						<input
+							className={inputClass}
+							id="grid-vertical"
+							name="grid-vertical"
+							type="number"
+							min={3}
+							onChange={(e) =>
+								checkSizeValidity(e.target.value, true)
+							}
+							placeholder="3"
+						/>
 					</label>
-					<input
-						className={`${inputClass}`}
-						id="grid-vertical"
-						name="grid-vertical"
-						type="number"
-						min={3}
-						onChange={(e) =>
-							checkSizeValidity(e.target.value, true)
-						}
-						placeholder="3"
-					/>
-					<label htmlFor="mine-density" className="text-xl">
-						Mine Density [0.1-0.9]:
+					<label htmlFor="mine-density" className={labelText}>
+						Mine Density (0-1):
+						<input
+							className={inputClass}
+							id="mine-density"
+							name="mine-density"
+							type="number"
+							min={0.1}
+							max={0.9}
+							step={0.1}
+							onChange={(e) => setMineDensity(e.target.value)}
+							placeholder="0.3"
+						/>
 					</label>
-					<input
-						className={`${inputClass}`}
-						id="mine-density"
-						name="mine-density"
-						type="number"
-						min={0.1}
-						max={0.9}
-						step={0.1}
-						onChange={(e) => setMineDensity(e.target.value)}
-						placeholder="0.3"
-					/>
 				</div>
 			</div>
-			<div className="flex flex-row items-center justify-center gap-5 m-5">
+			<div className="flex flex-row items-center justify-center gap-2 md:gap-3 lg:gap-4 m-2 md:m-3">
 				<button
 					onClick={() => {
 						initializeGrid();
 					}}
 					className={
-						buttonClassActive + " p-2 rounded-xl "
+						buttonActive
 						// +(isGridInitialized && !isGameOver ? " hidden " : "")
 					}
 				>
@@ -578,9 +594,7 @@ export default function MineSweeper() {
 						plantMines();
 					}}
 					className={
-						buttonClassActive +
-						" p-2 rounded-xl " +
-						(isGridInitialized ? "" : " hidden ")
+						buttonActive + (isGridInitialized ? "" : " hidden ")
 					}
 				>
 					{isGameOver ? "Start Game" : "Restart"}
@@ -590,15 +604,14 @@ export default function MineSweeper() {
 						toggleFlagMode();
 					}}
 					className={
-						buttonClassActive +
-						" p-2 rounded-xl " +
+						buttonActive +
 						(isGridInitialized && !isGameOver ? "" : " hidden ")
 					}
 				>
 					{isFlagModeOn ? "Disable Flag Mode" : "Activate Flag Mode"}
 				</button>
 			</div>
-			<div className="flex justify-center">
+			<div className="flex w-full justify-center">
 				{isGameRenderReady && drawGrid()}
 			</div>
 		</div>
