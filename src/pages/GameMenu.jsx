@@ -19,7 +19,7 @@ export default function GameMenu() {
 		<div className="min-h-screen background-with-tint-2 flex flex-col items-center">
 			<div className="w-full max-w-5xl px-4 flex flex-col flex-grow">
 				<Header />
-				<main className="flex flex-grow justify-center bg-gray-100">
+				<main className="flex flex-grow justify-center bg-white">
 					{selectedGame === minigamesList.None ? (
 						<GameSelection
 							minigamesList={minigamesList}

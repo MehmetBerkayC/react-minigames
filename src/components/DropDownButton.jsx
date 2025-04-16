@@ -14,7 +14,7 @@ export default function DropDownButton(props) {
 	const [selectedItem, setSelectedItem] = useState(dropDownItemsList.None);
 
 	return (
-		<div className="bg-slate-800 border border-white rounded-2xl">
+		<div className="bg-slate-800 border-2 border-black rounded-2xl">
 			<button
 				onClick={() => {
 					setToggleDropDown(!toggleDropDown);
